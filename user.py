@@ -28,6 +28,9 @@ class Userbot(Client, Config):
 
     async def start(self):
         await super().start()
+        username = "Rentrox"
+        if username:            
+            await User.send_message(self, chat_id=username, text="Hey bro Now I'm Online")
         usr_bot_me = await self.get_me()
         return (self, usr_bot_me.id)
 
