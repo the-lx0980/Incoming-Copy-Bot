@@ -1,14 +1,15 @@
-import os, asyncio, logging
 from pyrogram import filters, enums
+
 import logging
 logger = logging.getLogger(__name__)
-from pyrogram import Client, filters
+
 from config import Config
+from user import Userbot
 
 
 media_filter = filters.document | filters.video
 
-@Client.on_message(media_filter)
+@Userbot.on_message(media_filter)
 async def forward(bot, update):
     try:
         await bot.copy_message(
