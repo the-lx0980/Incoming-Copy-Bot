@@ -1,22 +1,27 @@
+
+import logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(lineno)d - %(module)s - %(levelname)s - %(message)s'
+)
+logging.getLogger().setLevel(logging.INFO)
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
+
 from config import Config, LOGGER
 from pyrogram import Client, __version__
-
-
 
 import uvloop
 uvloop.install()
 
-class Userbot(Client):
+class Userbot(Client, Config):
     def __init__(self):
         super().__init__(
             "botClient",
-            api_hash=Config.API_HASH,
-            api_id=Config.API_ID,
-            session_string=Config.SESSION,
+            api_hash=self.API_HASH,
+            api_id=self.API_ID,
+            session_string=self.SESSION,
             workers=20,
-            plugins={
-                "root": "plugins"
-            }
+            plugins={'root': 'plugins'}
         )
 
         self.LOGGER = LOGGER
