@@ -3,7 +3,7 @@ from pyrogram import filters, enums
 import logging
 logger = logging.getLogger(__name__)
 from pyrogram import Client, filters
-
+from config import Config
 
 
 media_filter = filters.document | filters.video
@@ -18,5 +18,5 @@ async def forward(bot, update):
             caption=f"**{update.caption}**",
             parse_mode=enums.ParseMode.MARKDOWN
         )
-    except FloodWait as e:
-        time.sleep(e.x)
+    except Exception as e:
+        logger.exception(e)
