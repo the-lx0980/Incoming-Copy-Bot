@@ -1,3 +1,3 @@
-from user import UserBot
+from user import Userbot
 
-UserBot().run()
+Userbot().run()
