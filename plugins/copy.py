@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 from config import Config
 
-@Client.on_message(filters.command('start'))
+@Client.on_message(filters.command('start') & filters.private)
 async def start(bot, update):
     await update.reply('Zinda hain.... 😐')
 
