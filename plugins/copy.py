@@ -1,15 +1,14 @@
-from pyrogram import filters, enums
+from pyrogram import filters, Client, enums
 
 import logging
 logger = logging.getLogger(__name__)
-
 from config import Config
-from user import Userbot
 
+@Client.on_message(filters.command('start'))
+async def start(bot, update):
+    await update.reply('Zinda hain.... 😐')
 
-media_filter = filters.document | filters.video
-
-@Userbot.on_message(media_filter)
+@Client.on_message(filters.document | filters.video)
 async def forward(bot, update):
     try:
         await bot.copy_message(
