@@ -9,6 +9,8 @@ logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 from config import Config, LOGGER
 from pyrogram import Client, __version__
+from aiohttp import web
+from plugins import web_server
 
 import uvloop
 uvloop.install()
@@ -32,7 +34,11 @@ class Userbot(Client, Config):
         if username:            
             await Userbot.send_message(self, chat_id=username, text="Hey bro Now I'm Online")
         usr_bot_me = await self.get_me()
-        return (self, usr_bot_me.id)
+        #web-response
+        app = web.AppRunner(await web_server())
+        await app.setup()
+        bind_address = "0.0.0.0"
+        await web.TCPSite(app, bind_address, 8080).start()
 
     async def stop(self, *args):
         await super().stop()
