@@ -1,3 +1,4 @@
 pyrogram==2.0.60
 TgCrypto
 uvloop
+aiohttp
