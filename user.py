@@ -1,7 +1,7 @@
 from pyrogram import Client, enums
 from config import LOGGER, Config
 
-class User(Client):
+class Userbot(Client):
     def __init__(self):
         super().__init__(
             'forwarduserbot',
