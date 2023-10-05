@@ -8,7 +8,7 @@ class User(Client):
             api_hash=Config.API_HASH,
             api_id=Config.API_ID,
             workers=8,
-            session_string=Config.SESSION
+            session_string=Config.SESSION,
             plugins={'root': 'plugins'}
         )
         self.LOGGER = LOGGER
