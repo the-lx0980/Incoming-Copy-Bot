@@ -11,7 +11,7 @@ Userbot = Client(
 
 @Userbot.on_message(filters.command('start'))
 async def start(bot, update):
-    await update.reply("Hello, I'm Auto Caption Bot")
+    await update.reply("Zinda hain.... 😐")
 
 @Userbot.on_message(media_filter)
 async def forward(bot, update):
