@@ -1,6 +1,7 @@
 from pyrogram import Client, filters, enums
 import logging
 
+logger = logging.getLogger(__name__)
 media_filter = filters.document | filters.video
 
 Userbot = Client(
