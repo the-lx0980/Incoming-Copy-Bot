@@ -1,7 +1,6 @@
 from pyrogram import Client, filters, enums
-import logging
+from config import Config
 
-logger = logging.getLogger(__name__)
 media_filter = filters.document | filters.video
 
 Userbot = Client(
@@ -26,6 +25,6 @@ async def forward(bot, update):
             parse_mode=enums.ParseMode.MARKDOWN
         )
     except Exception as e:
-        logger.exception(e)
+        print(e) 
 
 Userbot.run()
