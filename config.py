@@ -1,5 +1,12 @@
 import os, logging
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s - %(levelname)s] - %(name)s - %(message)s",
+    datefmt="%d-%b-%y %H:%M:%S",
+)
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
+
 class Config(object):
     API_ID = os.environ.get("API_ID")
     API_HASH = os.environ.get("API_HASH")
