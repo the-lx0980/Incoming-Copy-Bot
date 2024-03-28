@@ -12,13 +12,13 @@ Userbot = Client(
 
 @Userbot.on_message(filters.command('start'))
 async def start(bot, update):
-    await update.reply("Zinda hain.... 😐")
+    await update.reply("Zinda hain abhi.... 😐")
 
-@Userbot.on_message(media_filter)
+@Userbot.on_message(filters.chat(Config.FROM_CHAT) & media_filter)
 async def forward(bot, update):
     try:
         await bot.copy_message(
-            chat_id=Config.CHANNEL_ID,
+            chat_id=Config.TO_CHAT,
             from_chat_id=update.chat.id,
             message_id=update.id,
             caption=f"**{update.caption}**",
