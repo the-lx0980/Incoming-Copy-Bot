@@ -32,7 +32,7 @@ async def forward(bot, update):
 async def forward_group(bot, update):
     try:
         await bot.copy_message(
-            chat_id=Config.CHANNEL_ID,
+            chat_id=-1002082734364,
             from_chat_id=update.chat.id,
             message_id=update.id,
             caption=f"**{update.caption}**",
