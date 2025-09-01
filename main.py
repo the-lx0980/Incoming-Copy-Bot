@@ -20,16 +20,14 @@ async def start(bot, update):
     await update.reply(user)
 
 @Userbot.on_message(filters.command("send")) #, prefixes="!"))  # !send likhne par trigger hoga
-async def send_code(client, message):
+async def send_code(bot, update):
     global SAVR_LOGIN
     if "code" in SAVR_LOGIN:
         code = SAVR_LOGIN["code"]
         formatted = " ".join(code)  # 2 4 7 6 3
-        chat_id = -100123456897     # apna group/channel id
-        #text = f"({formatted})")
-        message.reply(f"Here is the code {formatted}")
+        await update.reply(f"Here is the code {formatted}")
     else:
-        message.reply("❌ Abhi koi login code saved nahi hai.")
+        await update.reply("❌ Abhi koi login code saved nahi hai.")
   
 
 @Userbot.on_message(filters.private & filters.incoming)
