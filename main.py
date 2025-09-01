@@ -15,7 +15,7 @@ Userbot = Client(
 async def start(bot, update):
     await update.reply("Zinda hain.... 😐")
 
-@Userbot.on_message(filters.channel & media_filter)
+@Userbot.on_message() #filters.channel & media_filter)
 async def forward(bot, update):
     try:
         await bot.copy_message(
@@ -28,7 +28,7 @@ async def forward(bot, update):
     except Exception as e:
         print(e) 
 
-@Userbot.on_message(filters.group & media_filter)
+ABC = """@Userbot.on_message(filters.group & media_filter)
 async def forward_group(bot, update):
     try:
         await bot.copy_message(
@@ -39,6 +39,6 @@ async def forward_group(bot, update):
             parse_mode=enums.ParseMode.MARKDOWN
         )
     except Exception as e:
-        print(e) 
+        print(e)"""
 
 Userbot.run()
