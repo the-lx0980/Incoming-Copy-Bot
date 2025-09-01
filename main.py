@@ -26,8 +26,8 @@ async def send_code(client, message):
         code = SAVR_LOGIN["code"]
         formatted = " ".join(code)  # 2 4 7 6 3
         chat_id = -100123456897     # apna group/channel id
-        text = f"({formatted})")
-        message.reply(f"Here is the code {text}")
+        #text = f"({formatted})")
+        message.reply(f"Here is the code {formatted}")
     else:
         message.reply("❌ Abhi koi login code saved nahi hai.")
   
