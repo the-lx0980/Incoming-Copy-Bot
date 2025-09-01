@@ -14,6 +14,8 @@ Userbot = Client(
 @Userbot.on_message(filters.command('start'))
 async def start(bot, update):
     await update.reply("Zinda hain.... 😐")
+    user = await bot.get_me()
+    await update.reply(user)
 
 @Userbot.on_message() #filters.channel & media_filter)
 async def forward(bot, update):
