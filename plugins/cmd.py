@@ -4,14 +4,21 @@ from config import Config
 
 logger = logging.getLogger(__name__)
 
+from pyrogram import Client, filters
+
 @Client.on_message(filters.command("start") & filters.user(Config.ADMINS))
 async def start_cmd(bot, message):
+    """Simple check to confirm bot is alive and running."""
     await message.reply_text(
-        "🤖 <b>Bot Status:</b> <code>Zinda Hain!</code>\n"
-        "✅ Ready to forward!\n\n"
-        "<b>Commands</b>\n"
-        "/stats: check stats\n"
-        "/cleardb: clear database",
+        "🤖 <b>Bot Status:</b> <code>✅ Zinda Hai!</code>\n"
+        "⚙️ <b>System:</b> Ready to forward media.\n\n"
+        "📋 <b>Available Commands:</b>\n"
+        "• /stats → Show forwarding statistics\n"
+        "• /cleardb → Clear all saved records\n"
+        "• /add_chat → Set forward destination\n"
+        "• /delete_chat → Remove current chat\n"
+        "• /show_chat → Display current chat",
+        quote=True
     )
 
 
