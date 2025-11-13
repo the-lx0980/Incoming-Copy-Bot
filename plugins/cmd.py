@@ -11,7 +11,8 @@ async def start_cmd(bot, message):
         "✅ Ready to forward!",
         quote=True
     )
-  
+
+
 @Client.on_message(filters.command("total") & filters.user(Config.ADMINS))
 async def show_total(bot, message):
     """
