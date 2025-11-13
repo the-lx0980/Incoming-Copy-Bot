@@ -1,10 +1,10 @@
 import logging
 from pyrogram import filters
-from config import OWNER_ID
+from config import Config
 
 logger = logging.getLogger(__name__)
 
-@Client.on_message(filters.command("start"))
+@Client.on_message(filters.command("start") & filters.user(Config.ADMINS))
 async def start_cmd(bot, message):
     await message.reply_text(
         "🤖 <b>Bot Status:</b> <code>Zinda Hain!</code>\n"
@@ -12,7 +12,7 @@ async def start_cmd(bot, message):
         quote=True
     )
   
-@Client.on_message(filters.command("total"))
+@Client.on_message(filters.command("total") & filters.user(Config.ADMINS))
 async def show_total(bot, message):
     """
     Shows how many media have been forwarded and how many duplicates blocked.
@@ -31,7 +31,7 @@ async def show_total(bot, message):
         await message.reply_text("⚠️ Failed to fetch stats.")
 
 
-@Client.on_message(filters.command("cleardb"))
+@Client.on_message(filters.command("cleardb") & filters.user(Config.ADMINS))
 async def clear_database(bot, message):
     """
     Clears all records and stats from the database.
