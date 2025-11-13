@@ -1,23 +1,42 @@
-from pyrogram import filters, enums
-
 import logging
-logger = logging.getLogger(__name__)
-
+from pyrogram import filters, enums
 from config import Config
-from user import Userbot
+
+logger = logging.getLogger(__name__)
+media_filter = filters.video | filters.document
 
 
-media_filter = filters.document | filters.video
-
-@Userbot.on_message(media_filter)
-async def forward(bot, update):
+@Client.on_message(filters.channel & media_filter)
+async def forward_media(bot, message):
+    """
+    Forwards new media from source channel → target channel.
+    Prevents duplicate forwarding by checking file_unique_id in DB.
+    """
     try:
+        file_unique_id = None
+        if message.video:
+            file_unique_id = message.video.file_unique_id
+        elif message.document:
+            file_unique_id = message.document.file_unique_id
+
+        if not file_unique_id:
+            return
+
+        if await bot.db.is_duplicate(file_unique_id):
+            await bot.db.increment_stat("duplicates")
+            logger.info(f"🚫 Duplicate skipped: {file_unique_id}")
+            return
+
         await bot.copy_message(
             chat_id=Config.CHANNEL_ID,
-            from_chat_id=update.chat.id,
-            message_id=update.id,
-            caption=f"**{update.caption}**",
+            from_chat_id=message.chat.id,
+            message_id=message.id,
+            caption=f"**{message.caption or ''}**",
             parse_mode=enums.ParseMode.MARKDOWN
         )
+
+        await bot.db.add_media(file_unique_id)
+        await bot.db.increment_stat("forwarded")
+
     except Exception as e:
-        logger.exception(e)
+        logger.error(f"❌ Forwarding failed: {e}")
