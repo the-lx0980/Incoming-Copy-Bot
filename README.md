@@ -1,4 +1,4 @@
-**A fast, async Telegram Userbot (Pyrogram) that forwards all incoming media in channels and prevents duplicates using the PyMongo Async API.**
+**A fast, async Telegram Userbot (Pyrogram) that forwards all incoming media in channels and prevents duplicates.**
 
 
 ## 🧩 Commands (available within the bot)
