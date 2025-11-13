@@ -1,6 +1,5 @@
 import logging
 from pyrogram import filters, enums
-from config import Config
 
 logger = logging.getLogger(__name__)
 media_filter = filters.video | filters.document
@@ -27,8 +26,11 @@ async def forward_media(bot, message):
             logger.info(f"🚫 Duplicate skipped: {file_unique_id}")
             return
 
+        chat = await bot.db.get_channel()
+        if not chat:
+            return
         await bot.copy_message(
-            chat_id=Config.CHANNEL_ID,
+            chat_id=chat,
             from_chat_id=message.chat.id,
             message_id=message.id,
             caption=f"**{message.caption or ''}**",
