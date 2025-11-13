@@ -1,14 +1,7 @@
 import logging
 from pyrogram import Client, __version__, enums
-from config import Config
+from config import Config, LOGGER
 from database import Database  
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-)
-LOGGER = logging.getLogger("copy-user-bot")
-
 
 class UserBot(Client):
     def __init__(self):
