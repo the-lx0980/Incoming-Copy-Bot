@@ -1,45 +1,51 @@
-
 import logging
+from pyrogram import Client, __version__, enums
+from config import API_ID, API_HASH, SESSION
+from database import Database  # ✅ Import the database class
+
 logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(lineno)d - %(module)s - %(levelname)s - %(message)s'
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
-logging.getLogger().setLevel(logging.INFO)
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
+LOGGER = logging.getLogger("CNL-Auto-Post-Bot")
 
-from config import Config, LOGGER
-from pyrogram import Client, __version__
-from aiohttp import web
-from plugins import web_server
 
-import uvloop
-uvloop.install()
-
-class Userbot(Client, Config):
+class UserBot(Client):
     def __init__(self):
         super().__init__(
-            "botClient",
-            api_hash=self.API_HASH,
-            api_id=self.API_ID,
-            session_string=self.SESSION,
+            "userClient",
+            api_hash=API_HASH,
+            api_id=API_ID,
+            plugins={"root": "plugins"},
             workers=20,
-            plugins={'root': 'plugins'}
+            session_string=SESSION,
+            sleep_threshold=10
         )
-
         self.LOGGER = LOGGER
+        self.db = Database()  # ✅ Database instance
 
-    async def start(self):
-        await super().start()
-        username = "Rentrox"
-        if username:            
-            await Userbot.send_message(self, chat_id=username, text="Hey bro Now I'm Online")
-        usr_bot_me = await self.get_me()
-        #web-response
-        app = web.AppRunner(await web_server())
-        await app.setup()
-        bind_address = "0.0.0.0"
-        await web.TCPSite(app, bind_address, 8080).start()
+    async def start(self, *args, **kwargs):
+        """Start bot and connect database."""
+        await super().start(*args, **kwargs)
+        bot_details = await self.get_me()
+        self.set_parse_mode(enums.ParseMode.HTML)
 
-    async def stop(self, *args):
-        await super().stop()
-        self.LOGGER(__name__).info("Bot stopped. Bye.")
+        # ✅ Connect database
+        try:
+            await self.db.connect()
+        except Exception as e:
+            self.LOGGER.error(f"❌ Failed to connect to MongoDB: {e}")
+            raise SystemExit("Database connection failed. Exiting...")
+
+        self.LOGGER.info(f"🤖 @{bot_details.username} (Pyrogram v{__version__}) started successfully!")
+        self.LOGGER.info("📦 MongoDB connection established and ready.")
+
+    async def stop(self, *args, **kwargs):
+        """Stop bot and close database connection."""
+        try:
+            await self.db.close()  # ✅ Close DB cleanly
+        except Exception as e:
+            self.LOGGER.warning(f"⚠️ Error closing MongoDB: {e}")
+
+        await super().stop(*args, **kwargs)
+        self.LOGGER.info("🛑 Bot stopped and MongoDB connection closed.")
