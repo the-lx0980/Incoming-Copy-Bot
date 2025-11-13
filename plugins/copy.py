@@ -4,7 +4,6 @@ from pyrogram import filters, enums
 logger = logging.getLogger(__name__)
 media_filter = filters.video | filters.document
 
-
 @Client.on_message(filters.channel & media_filter)
 async def forward_media(bot, message):
     try:
