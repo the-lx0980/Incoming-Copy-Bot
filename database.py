@@ -12,9 +12,10 @@ class Database:
         self.db = None
         self.collection = None
         self.stats = None
+        self.settings = None  # new for storing single forward channel
 
     async def connect(self):
-        """Initialize MongoDB connection with auto-reconnect and index"""
+        """Initialize MongoDB connection with auto-reconnect and indexes"""
         try:
             self.client = AsyncMongoClient(
                 self.db_url,
@@ -24,9 +25,11 @@ class Database:
                 connectTimeoutMS=4000,
             )
             await self.client.admin.command("ping")
+
             self.db = self.client["UserbotDB"]
             self.collection = self.db["ForwardedMedia"]
             self.stats = self.db["Stats"]
+            self.settings = self.db["Settings"]
 
             # ✅ Ensure unique index for fast duplicate checks
             await self.collection.create_index(
@@ -49,10 +52,11 @@ class Database:
             logger.warning("⚠️ MongoDB connection lost — reconnecting...")
             await self.connect()
 
+    #  MEDIA MANAGEMENT
+
     async def is_duplicate(self, file_unique_id: str) -> bool:
         """Check if file already exists"""
         await self.ensure_connection()
-        # ⚡ Faster than find_one when we only need existence check
         count = await self.collection.count_documents({"file_unique_id": file_unique_id}, limit=1)
         return count > 0
 
@@ -63,6 +67,8 @@ class Database:
             await self.collection.insert_one({"file_unique_id": file_unique_id})
         except errors.DuplicateKeyError:
             logger.debug(f"Duplicate ignored: {file_unique_id}")
+
+    #  STATISTICS
 
     async def increment_stat(self, key: str):
         """Increment forwarded/duplicate counters"""
@@ -88,6 +94,30 @@ class Database:
         await self.collection.delete_many({})
         await self.stats.delete_many({})
         logger.info("🧹 Database cleared.")
+
+    #  CHANNEL MANAGEMENT
+
+    async def set_channel(self, channel_id: int):
+        """Save the forward target channel (only one allowed)"""
+        await self.ensure_connection()
+        await self.settings.update_one(
+            {"_id": "to_channel"},
+            {"$set": {"channel_id": channel_id}},
+            upsert=True
+        )
+        logger.info(f"✅ Forward channel set to {channel_id}")
+
+    async def get_channel(self) -> int | None:
+        """Return saved forward channel ID"""
+        await self.ensure_connection()
+        doc = await self.settings.find_one({"_id": "to_channel"})
+        return doc.get("channel_id") if doc else None
+
+    async def delete_channel(self):
+        """Remove saved forward channel"""
+        await self.ensure_connection()
+        await self.settings.delete_one({"_id": "to_channel"})
+        logger.info("🗑️ Forward channel removed.")
 
     async def close(self):
         """Cleanly close MongoDB client (used on bot.stop())"""
