@@ -7,10 +7,6 @@ media_filter = filters.video | filters.document
 
 @Client.on_message(filters.channel & media_filter)
 async def forward_media(bot, message):
-    """
-    Forwards new media from source channel → target channel.
-    Prevents duplicate forwarding by checking file_unique_id in DB.
-    """
     try:
         file_unique_id = None
         if message.video:
