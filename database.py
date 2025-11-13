@@ -1,12 +1,12 @@
 import logging
 from pymongo.mongo_client import AsyncMongoClient
 from pymongo import ASCENDING, errors
-
+from config import Config
 logger = logging.getLogger(__name__)
 
 class Database:
     def __init__(self):
-        self.db_url = db_url
+        self.db_url = Config.DB_URL
         self.client = None
         self.db = None
         self.collection = None
