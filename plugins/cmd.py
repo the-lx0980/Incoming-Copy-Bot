@@ -1,10 +1,10 @@
 import logging
 from pyrogram import filters
 from config import Config
+from pyrogram.errors import UserNotParticipant
+from pyrogram import Client, filters
 
 logger = logging.getLogger(__name__)
-
-from pyrogram import Client, filters
 
 @Client.on_message(filters.command("start") & filters.user(Config.ADMINS))
 async def start_cmd(bot, message):
@@ -53,3 +53,54 @@ async def clear_database(bot, message):
     except Exception as e:
         logger.error(f"❌ Failed to clear database: {e}")
         await message.reply_text("⚠️ Failed to clear database.")
+
+@Client.on_message(filters.command("add_chat") & filters.user(Config.ADMINS))
+async def add_channel_cmd(bot, message):
+    """Add one chat for forwarding"""
+    if len(message.command) < 2:
+        return await message.reply_text("❌ Usage: `/add_chat <chat_id>`", quote=True)
+
+    try:
+        channel_id = int(message.command[1])
+        
+        try:
+            chat = await bot.get_chat(channel_id)
+        except UserNotParticipant:
+            return await message.reply_text("🚫 Userbot must be a member of that chat first!")
+        except Exception as e:
+            return await message.reply_text(f"❌ Error:\n{e}")
+
+        await bot.db.set_channel(chat.id)
+        await message.reply_text(f"✅ Chat added for forwarding:\n<b>{chat.title}</b> (<code>{chat.id}</code>)", quote=True)
+    
+    except Exception as e:
+        await message.reply_text(f"❌ Error: {e}", quote=True)
+
+
+@Client.on_message(filters.command("delete_chat") & filters.user(Config.ADMINS))
+async def delete_channel_cmd(bot, message):
+    """Delete the saved forward chat"""
+    await bot.db.delete_channel()
+    await message.reply_text("🗑️ Forward channel deleted.", quote=True)
+
+
+@Client.on_message(filters.command("show_chat") & filters.user(Config.ADMINS))
+async def show_channel_cmd(bot, message):
+    """Show the currently set chat"""
+    try:
+        channel_id = await bot.db.get_channel()
+        if not channel_id:
+            return await message.reply_text("⚠️ No forward channel set yet.", quote=True)
+
+        try:
+            chat = await bot.get_chat(channel_id)
+            status = f"✅ Active: <b>{chat.title}</b> (<code>{chat.id}</code>)"
+        except Exception as e:
+            status = f"⚠️ Can't access chat: {e}"
+
+        await message.reply_text(
+            f"📡 Current forward chat:\n<b>ID:</b> <code>{channel_id}</code>\n<b>Status:</b> {status}",
+            quote=True
+        )
+    except Exception as e:
+        await message.reply_text(f"❌ Error: {e}", quote=True)
