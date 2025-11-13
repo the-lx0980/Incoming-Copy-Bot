@@ -8,12 +8,14 @@ logger = logging.getLogger(__name__)
 async def start_cmd(bot, message):
     await message.reply_text(
         "🤖 <b>Bot Status:</b> <code>Zinda Hain!</code>\n"
-        "✅ Ready to forward!",
-        quote=True
+        "✅ Ready to forward!\n\n"
+        "<b>Commands</b>\n"
+        "/stats: check stats\n"
+        "/cleardb: clear database",
     )
 
 
-@Client.on_message(filters.command("total") & filters.user(Config.ADMINS))
+@Client.on_message(filters.command("stats") & filters.user(Config.ADMINS))
 async def show_total(bot, message):
     """
     Shows how many media have been forwarded and how many duplicates blocked.
