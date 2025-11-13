@@ -7,15 +7,15 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
-LOGGER = logging.getLogger("CNL-Auto-Post-Bot")
+LOGGER = logging.getLogger("copy-user-bot")
 
 
 class UserBot(Client):
     def __init__(self):
         super().__init__(
             "userClient",
-            api_hash=API_HASH,
             api_id=API_ID,
+            api_hash=API_HASH,
             plugins={"root": "plugins"},
             workers=20,
             session_string=SESSION,
@@ -25,27 +25,25 @@ class UserBot(Client):
         self.db = Database()  # ✅ Database instance
 
     async def start(self, *args, **kwargs):
-        """Start bot and connect database."""
+        """Start userbot and connect to the database."""
         await super().start(*args, **kwargs)
-        bot_details = await self.get_me()
         self.set_parse_mode(enums.ParseMode.HTML)
+        bot = await self.get_me()
 
         # ✅ Connect database
         try:
             await self.db.connect()
+            self.LOGGER.info("📦 Database connected successfully.")
         except Exception as e:
-            self.LOGGER.error(f"❌ Failed to connect to MongoDB: {e}")
-            raise SystemExit("Database connection failed. Exiting...")
+            self.LOGGER.error(f"❌ Database connection failed: {e}")
+            raise
 
-        self.LOGGER.info(f"🤖 @{bot_details.username} (Pyrogram v{__version__}) started successfully!")
-        self.LOGGER.info("📦 MongoDB connection established and ready.")
+        # ✅ Log startup info
+        self.LOGGER.info(f"🤖 Userbot started as @{bot.username} (ID: {bot.id})")
+        self.LOGGER.info(f"Pyrogram v{__version__} is running...")
 
     async def stop(self, *args, **kwargs):
-        """Stop bot and close database connection."""
-        try:
-            await self.db.close()  # ✅ Close DB cleanly
-        except Exception as e:
-            self.LOGGER.warning(f"⚠️ Error closing MongoDB: {e}")
-
+        """Stop the userbot and close database connection."""
+        await self.db.close()
         await super().stop(*args, **kwargs)
-        self.LOGGER.info("🛑 Bot stopped and MongoDB connection closed.")
+        self.LOGGER.info("🛑 Userbot stopped. Goodbye!")
