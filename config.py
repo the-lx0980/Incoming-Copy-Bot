@@ -8,5 +8,9 @@ class Config(object):
     DB_URL = getenv("DB_URL")
     ADMINS = [int(x) for x in getenv("ADMINS", "0").split(",") if x.strip().isdigit()]
 
-def LOGGER(name: str) -> logging.Logger:
-    return logging.getLogger(name)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+LOGGER = logging.getLogger("copy-user-bot")
+
