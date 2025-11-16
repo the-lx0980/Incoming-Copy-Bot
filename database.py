@@ -1,5 +1,5 @@
 import logging
-from pymongo.mongo_client import AsyncMongoClient
+from pymongo.asyncio import MongoClient
 from pymongo import ASCENDING, errors
 from config import Config
 
@@ -18,7 +18,7 @@ class Database:
     async def connect(self):
         """Initialize MongoDB connection with auto-reconnect and index"""
         try:
-            self.client = AsyncMongoClient(
+            self.client = MongoClient(
                 self.db_url,
                 serverSelectionTimeoutMS=5000,
                 maxPoolSize=30,
