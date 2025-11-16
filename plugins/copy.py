@@ -37,7 +37,13 @@ async def forward_media(bot, message):
             )
         except FloodWait as e:
             await asyncio.sleep(e.value)
-            
+            await bot.copy_message(
+                chat_id=chat,
+                from_chat_id=message.chat.id,
+                message_id=message.id,
+                caption=f"**{message.caption or ''}**",
+                parse_mode=enums.ParseMode.MARKDOWN
+            )   
         await asyncio.sleep(1)   
         await bot.db.add_media(file_unique_id)
         await bot.db.increment_stat("forwarded")
