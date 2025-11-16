@@ -1,9 +1,9 @@
 # 📇 Copy UserBot 📇
 
-A **UserBot** is just a Telegram account you control with code—here, with Pyrogram. This Copy UserBot grabs media from any channels or groups you choose and automatically forwards it all to one destination channel. It skips duplicates and keeps an eye on Telegram’s flood limits so you don’t have to.
+A **UserBot** is just a Telegram account you control with code—here, with Pyrogram. This Copy UserBot grabs media from any channels you choose and automatically forwards it all to one destination channel or group. It skips duplicates and keeps an eye on Telegram’s flood limits so you don’t have to.
 
 ## ✅ Why Use a UserBot?
-- Looks and acts like a regular user, so it can join any group or channel.
+- Looks and acts like a regular user, so it can join any channel.
 - Gets into private channels and groups where normal bots aren’t allowed.
 - Doesn’t need admin rights in source channels—just being a member works.
 - Handles all types of media: videos, docs, audio, you name it.
