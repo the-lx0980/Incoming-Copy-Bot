@@ -11,7 +11,7 @@ class UserBot(Client):
             api_hash=Config.API_HASH,
             plugins={"root": "plugins"},
             workers=20,
-            bot_token=Config.SESSION,
+            session_string=Config.SESSION,
             sleep_threshold=10
         )
         self.LOGGER = LOGGER
