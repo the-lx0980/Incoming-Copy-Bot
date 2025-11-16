@@ -55,18 +55,15 @@ class Database:
             logger.warning("⚠️ MongoDB connection lost — reconnecting...")
             await self.connect()
 
-    async def is_duplicate(self, file_unique_id: str) -> bool:
-        await self.ensure_connection()
-        count = await self.collection.count_documents({"file_unique_id": file_unique_id}, limit=1)
-        return count > 0
 
-    async def add_media(self, file_unique_id: str):
+    async def add_media(self, file_unique_id: str) -> bool:
         await self.ensure_connection()
         try:
             await self.collection.insert_one({"file_unique_id": file_unique_id})
+            return True  # NEW FILE
         except errors.DuplicateKeyError:
-            logger.debug(f"Duplicate ignored: {file_unique_id}")
-
+            return False  # DUPLICATE (EVEN UNDER RACE CONDITIONS)
+            
     async def increment_stat(self, key: str):
         await self.ensure_connection()
         await self.stats.update_one(
