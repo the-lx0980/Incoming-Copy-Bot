@@ -1,6 +1,6 @@
 import logging
 from pymongo import AsyncMongoClient
-from pymongo import ASCENDING, errors
+from pymongo import errors
 from config import Config
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ class Database:
         self._cached_channel = None  # ⚡ Fast in-memory cache
 
     async def connect(self):
-        """Initialize MongoDB connection with auto-reconnect and index"""
+        """Initialize MongoDB connection with auto-reconnect"""
         try:
             self.client = AsyncMongoClient(
                 self.db_url,
@@ -32,13 +32,11 @@ class Database:
             self.stats = self.db["Stats"]
             self.settings = self.db["Settings"]
 
-            # ⚡ atomic duplicate protection
-            await self.collection.create_index("_id", unique=True)
-
             doc = await self.settings.find_one({"_id": "to_channel"})
             self._cached_channel = doc.get("channel_id") if doc else None
 
             logger.info("✅ MongoDB connected successfully.")
+
         except errors.ServerSelectionTimeoutError as e:
             logger.error(f"❌ MongoDB connection failed: {e}")
             raise e
@@ -48,15 +46,16 @@ class Database:
         if not self.client:
             await self.connect()
             return
+
         try:
             await self.client.admin.command("ping")
         except Exception:
             logger.warning("⚠️ MongoDB connection lost — reconnecting...")
             await self.connect()
 
-    # ❌ REMOVED is_duplicate() — no longer needed
-    # Duplicate check is now atomic inside add_media()
-
+    # ---------------------------------------------------------
+    # 🔥 ATOMIC DUPLICATE CHECK (No race condition ever)
+    # ---------------------------------------------------------
     async def add_media(self, file_unique_id: str) -> bool:
         """
         Insert media atomically.
@@ -65,6 +64,7 @@ class Database:
             False → duplicate
         """
         await self.ensure_connection()
+
         try:
             await self.collection.insert_one({"_id": file_unique_id})
             return True
@@ -85,6 +85,7 @@ class Database:
         forwarded = stats.get("forwarded", 0)
         duplicates = stats.get("duplicates", 0)
         total = await self.collection.estimated_document_count()
+
         return {
             "forwarded": forwarded,
             "duplicates": duplicates,
@@ -98,7 +99,6 @@ class Database:
         logger.info("🧹 Database cleared.")
 
     async def set_channel(self, channel_id: int):
-        """Save the forward target channel"""
         await self.ensure_connection()
         await self.settings.update_one(
             {"_id": "to_channel"},
@@ -109,7 +109,6 @@ class Database:
         logger.info(f"✅ Forward channel set to {channel_id}")
 
     async def get_channel(self) -> int | None:
-        """Return saved forward channel — with fast cache"""
         if self._cached_channel is not None:
             return self._cached_channel
 
