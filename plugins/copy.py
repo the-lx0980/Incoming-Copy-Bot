@@ -1,4 +1,6 @@
 import logging
+import asyncio
+from pyrogram.errors import FloodWait
 from pyrogram import Client, filters, enums
 
 logger = logging.getLogger(__name__)
@@ -24,14 +26,19 @@ async def forward_media(bot, message):
         chat = await bot.db.get_channel()
         if not chat:
             return
-        await bot.copy_message(
-            chat_id=chat,
-            from_chat_id=message.chat.id,
-            message_id=message.id,
-            caption=f"**{message.caption or ''}**",
-            parse_mode=enums.ParseMode.MARKDOWN
-        )
-
+            
+        try:    
+            await bot.copy_message(
+                chat_id=chat,
+                from_chat_id=message.chat.id,
+                message_id=message.id,
+                caption=f"**{message.caption or ''}**",
+                parse_mode=enums.ParseMode.MARKDOWN
+            )
+        except FloodWait as e:
+            await asyncio.sleep(e.value)
+            
+        await asyncio.sleep(1)   
         await bot.db.add_media(file_unique_id)
         await bot.db.increment_stat("forwarded")
 
