@@ -25,7 +25,9 @@ async def forward_media(bot, message):
         if not file_unique_id:
             return
 
-        if await bot.db.is_duplicate(file_unique_id):
+        result = await bot.db.add_media(file_unique_id)
+
+        if not result:
             await bot.db.increment_stat("duplicates")
             logger.info(f"🚫 Duplicate skipped: {file_unique_id}")
             return
@@ -48,7 +50,6 @@ async def forward_media(bot, message):
                 parse_mode=enums.ParseMode.MARKDOWN
             )   
         await asyncio.sleep(1)   
-        await bot.db.add_media(file_unique_id)
         await bot.db.increment_stat("forwarded")
 
     except Exception as e:
