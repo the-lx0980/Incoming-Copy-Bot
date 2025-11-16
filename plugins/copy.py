@@ -9,6 +9,13 @@ media_filter = filters.video | filters.document
 @Client.on_message(filters.channel & media_filter)
 async def forward_media(bot, message):
     try:
+        chat = await bot.db.get_channel()
+        if not chat:
+            return
+
+        if message.chat.id == chat:
+            return
+            
         file_unique_id = None
         if message.video:
             file_unique_id = message.video.file_unique_id
@@ -21,10 +28,6 @@ async def forward_media(bot, message):
         if await bot.db.is_duplicate(file_unique_id):
             await bot.db.increment_stat("duplicates")
             logger.info(f"🚫 Duplicate skipped: {file_unique_id}")
-            return
-
-        chat = await bot.db.get_channel()
-        if not chat:
             return
             
         try:    
