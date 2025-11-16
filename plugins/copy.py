@@ -7,30 +7,23 @@ media_filter = filters.video | filters.document
 @Client.on_message(filters.channel & media_filter)
 async def forward_media(bot, message):
     try:
-        # Extract unique file ID
-        file_unique_id = (
-            message.video.file_unique_id if message.video else
-            message.document.file_unique_id if message.document else
-            None
-        )
+        file_unique_id = None
+        if message.video:
+            file_unique_id = message.video.file_unique_id
+        elif message.document:
+            file_unique_id = message.document.file_unique_id
 
         if not file_unique_id:
             return
 
-        # 🔥 ATOMIC duplicate check (no race condition)
-        is_new = await bot.db.add_media(file_unique_id)
-
-        if not is_new:
+        if await bot.db.is_duplicate(file_unique_id):
             await bot.db.increment_stat("duplicates")
             logger.info(f"🚫 Duplicate skipped: {file_unique_id}")
             return
 
-        # Fetch target channel
         chat = await bot.db.get_channel()
         if not chat:
             return
-
-        # Forward media
         await bot.copy_message(
             chat_id=chat,
             from_chat_id=message.chat.id,
@@ -39,6 +32,7 @@ async def forward_media(bot, message):
             parse_mode=enums.ParseMode.MARKDOWN
         )
 
+        await bot.db.add_media(file_unique_id)
         await bot.db.increment_stat("forwarded")
 
     except Exception as e:
