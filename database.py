@@ -13,7 +13,7 @@ class Database:
         self.collection = None
         self.stats = None
         self.settings = None
-        self._cached_channel = None  # ⚡ in-memory cache for fast get_channel
+        self._cached_channel = None  # ⚡ Fast in-memory cache
 
     async def connect(self):
         """Initialize MongoDB connection with auto-reconnect and index"""
@@ -32,9 +32,8 @@ class Database:
             self.stats = self.db["Stats"]
             self.settings = self.db["Settings"]
 
-            await self.collection.create_index(
-                [("file_unique_id", ASCENDING)], unique=True
-            )
+            # ⚡ atomic duplicate protection
+            await self.collection.create_index("_id", unique=True)
 
             doc = await self.settings.find_one({"_id": "to_channel"})
             self._cached_channel = doc.get("channel_id") if doc else None
@@ -55,17 +54,22 @@ class Database:
             logger.warning("⚠️ MongoDB connection lost — reconnecting...")
             await self.connect()
 
-    async def is_duplicate(self, file_unique_id: str) -> bool:
-        await self.ensure_connection()
-        count = await self.collection.count_documents({"file_unique_id": file_unique_id}, limit=1)
-        return count > 0
+    # ❌ REMOVED is_duplicate() — no longer needed
+    # Duplicate check is now atomic inside add_media()
 
-    async def add_media(self, file_unique_id: str):
+    async def add_media(self, file_unique_id: str) -> bool:
+        """
+        Insert media atomically.
+        Returns:
+            True  → new file (not duplicate)
+            False → duplicate
+        """
         await self.ensure_connection()
         try:
-            await self.collection.insert_one({"file_unique_id": file_unique_id})
+            await self.collection.insert_one({"_id": file_unique_id})
+            return True
         except errors.DuplicateKeyError:
-            logger.debug(f"Duplicate ignored: {file_unique_id}")
+            return False
 
     async def increment_stat(self, key: str):
         await self.ensure_connection()
@@ -81,7 +85,11 @@ class Database:
         forwarded = stats.get("forwarded", 0)
         duplicates = stats.get("duplicates", 0)
         total = await self.collection.estimated_document_count()
-        return {"forwarded": forwarded, "duplicates": duplicates, "total": total}
+        return {
+            "forwarded": forwarded,
+            "duplicates": duplicates,
+            "total": total
+        }
 
     async def clear_all(self):
         await self.ensure_connection()
@@ -90,7 +98,7 @@ class Database:
         logger.info("🧹 Database cleared.")
 
     async def set_channel(self, channel_id: int):
-        """Save the forward target channel (only one allowed)"""
+        """Save the forward target channel"""
         await self.ensure_connection()
         await self.settings.update_one(
             {"_id": "to_channel"},
@@ -101,11 +109,10 @@ class Database:
         logger.info(f"✅ Forward channel set to {channel_id}")
 
     async def get_channel(self) -> int | None:
-        """Return saved forward channel — uses in-memory cache (O(1))"""
-        # ⚡ Instant return if cached
+        """Return saved forward channel — with fast cache"""
         if self._cached_channel is not None:
             return self._cached_channel
-        # fallback (if cache empty)
+
         await self.ensure_connection()
         doc = await self.settings.find_one({"_id": "to_channel"})
         self._cached_channel = doc.get("channel_id") if doc else None
@@ -114,7 +121,7 @@ class Database:
     async def delete_channel(self):
         await self.ensure_connection()
         await self.settings.delete_one({"_id": "to_channel"})
-        self._cached_channel = None  # clear cache
+        self._cached_channel = None
         logger.info("🗑️ Forward channel removed.")
 
     async def close(self):
