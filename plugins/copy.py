@@ -1,5 +1,5 @@
 import logging
-from pyrogram import filters, enums
+from pyrogram import Client, filters, enums
 
 logger = logging.getLogger(__name__)
 media_filter = filters.video | filters.document
