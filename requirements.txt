@@ -1,4 +1,4 @@
-kurigram==2.2.23
+kurigram==2.2.24
 TgCrypto-pyrofork==1.2.8
 pymongo==4.17.0
 uvloop==0.22.1
