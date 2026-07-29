@@ -3,7 +3,6 @@ from pyrogram import filters
 from config import Config
 from pyrogram.errors import UserNotParticipant
 from pyrogram import Client, filters
-from pyrogram.types import ReplyParameters  # Imported the ReplyParameters class
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +18,6 @@ async def start_cmd(bot, message):
         "• /add_chat → Set forward destination\n"
         "• /delete_chat → Remove current chat\n"
         "• /show_chat → Display current chat",
-        reply_parameters=ReplyParameters(message_id=message.id)
     )
 
 
@@ -59,10 +57,7 @@ async def clear_database(bot, message):
 async def add_channel_cmd(bot, message):
     """Add one chat for forwarding"""
     if len(message.command) < 2:
-        return await message.reply_text(
-            "❌ Usage: `/add_chat <chat_id>`", 
-            reply_parameters=ReplyParameters(message_id=message.id)
-        )
+        return await message.reply_text("❌ Usage: `/add_chat <chat_id>`")
 
     try:
         channel_id = int(message.command[1])
@@ -75,27 +70,19 @@ async def add_channel_cmd(bot, message):
             return await message.reply_text(f"❌ Error:\n{e}")
 
         await bot.db.set_channel(chat.id)
-        await message.reply_text(
-            f"✅ Chat added for forwarding:\n<b>{chat.title}</b> (<code>{chat.id}</code>)", 
-            reply_parameters=ReplyParameters(message_id=message.id)
-        )
-    
+        await message.reply_text(f"✅ Chat added for forwarding:\n<b>{chat.title}</b> (<code>{chat.id}</code>)")
+            
     except Exception as e:
-        await message.reply_text(
-            f"❌ Error: {e}", 
-            reply_parameters=ReplyParameters(message_id=message.id)
-        )
+        await message.reply_text(f"❌ Error: {e}")
+            
 
 
 @Client.on_message(filters.command("delete_chat") & filters.user(Config.ADMINS))
 async def delete_channel_cmd(bot, message):
     """Delete the saved forward chat"""
     await bot.db.delete_channel()
-    await message.reply_text(
-        "🗑️ Forward channel deleted.", 
-        reply_parameters=ReplyParameters(message_id=message.id)
-    )
-
+    await message.reply_text("🗑️ Forward channel deleted.")
+        
 
 @Client.on_message(filters.command("show_chat") & filters.user(Config.ADMINS))
 async def show_channel_cmd(bot, message):
@@ -103,23 +90,16 @@ async def show_channel_cmd(bot, message):
     try:
         channel_id = await bot.db.get_channel()
         if not channel_id:
-            return await message.reply_text(
-                "⚠️ No forward channel set yet.", 
-                reply_parameters=ReplyParameters(message_id=message.id)
-            )
-
+            return await message.reply_text("⚠️ No forward channel set yet.")
+                
         try:
             chat = await bot.get_chat(channel_id)
             status = f"✅ Active: <b>{chat.title}</b> (<code>{chat.id}</code>)"
         except Exception as e:
             status = f"⚠️ Can't access chat: {e}"
 
-        await message.reply_text(
-            f"📡 Current forward chat:\n<b>ID:</b> <code>{channel_id}</code>\n<b>Status:</b> {status}",
-            reply_parameters=ReplyParameters(message_id=message.id)
-        )
+        await message.reply_text(f"📡 Current forward chat:\n<b>ID:</b> <code>{channel_id}</code>\n<b>Status:</b> {status}")
+            
     except Exception as e:
-        await message.reply_text(
-            f"❌ Error: {e}", 
-            reply_parameters=ReplyParameters(message_id=message.id)
-        )
+        await message.reply_text(f"❌ Error: {e}")
+            
