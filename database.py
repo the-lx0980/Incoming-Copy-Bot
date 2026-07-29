@@ -60,9 +60,9 @@ class Database:
         await self.ensure_connection()
         try:
             await self.collection.insert_one({"file_unique_id": file_unique_id})
-            return True  # NEW FILE
+            return False # NEW FILE
         except errors.DuplicateKeyError:
-            return False  # DUPLICATE (EVEN UNDER RACE CONDITIONS)
+            return "duplicate" # DUPLICATE (EVEN UNDER RACE CONDITIONS)
             
     async def increment_stat(self, key: str):
         await self.ensure_connection()
