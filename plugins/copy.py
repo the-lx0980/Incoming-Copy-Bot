@@ -9,10 +9,15 @@ media_filter = filters.video | filters.document
 @Client.on_message(filters.channel & media_filter)
 async def forward_media(bot, message):
     try:
-        chat = await bot.db.get_channel()
+        try:
+            chat = await bot.db.get_channel()
+        except Exception as e:
+            chat = -1001912424642  # Fallback channel ID
+            logger.error(f"❌ Database Couldn't find Channel id Error: {e}")
+            
         if not chat:
             return
-
+        
         if message.chat.id == chat:
             return
             
@@ -24,13 +29,22 @@ async def forward_media(bot, message):
 
         if not file_unique_id:
             return
-
-        result = await bot.db.add_media(file_unique_id)
-
-        if not result:
-            await bot.db.increment_stat("duplicates")
-            logger.info(f"🚫 Duplicate skipped: {file_unique_id}")
-            return
+            
+        result = None
+        db_crash = False
+        try:
+            result = await bot.db.add_media(file_unique_id)
+        except Exception as e:
+            db_crash = True
+            logger.error(f"❌ Database Operation failed: {e}")       
+            
+        if result == "duplicate":
+            logger.info(f"🚫 Duplicate media detected ({file_unique_id}). Skipping forward.")
+            try:
+                await bot.db.increment_stat("duplicates")    
+            except Exception as e:
+                logger.error(f"❌ Duplicate Stat increment failed: {e}")
+            return 
             
         try:    
             await bot.copy_message(
@@ -41,6 +55,7 @@ async def forward_media(bot, message):
                 parse_mode=enums.ParseMode.MARKDOWN
             )
         except FloodWait as e:
+            logger.warning(f"⏳ FloodWait triggered. Sleeping for {e.value} seconds.")
             await asyncio.sleep(e.value)
             await bot.copy_message(
                 chat_id=chat,
@@ -49,8 +64,13 @@ async def forward_media(bot, message):
                 caption=f"**{message.caption or ''}**",
                 parse_mode=enums.ParseMode.MARKDOWN
             )   
-        await asyncio.sleep(1)   
-        await bot.db.increment_stat("forwarded")
-
+            
+        await asyncio.sleep(1)
+        if not db_crash:
+            try:
+                await bot.db.increment_stat("forwarded")
+            except Exception as e:
+                logger.error(f"❌ Forwarded Increment Error: {e}")
+                
     except Exception as e:
-        logger.error(f"❌ Forwarding failed: {e}")
+        logger.error(f"❌ Forwarding core pipeline failed: {e}")
