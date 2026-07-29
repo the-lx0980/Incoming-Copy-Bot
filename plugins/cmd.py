@@ -17,7 +17,7 @@ async def start_cmd(bot, message):
         "• /cleardb → Clear all saved records\n"
         "• /add_chat → Set forward destination\n"
         "• /delete_chat → Remove current chat\n"
-        "• /show_chat → Display current chat",
+        "• /show_chat → Display current chat"
     )
 
 
