@@ -22,12 +22,16 @@ async def forward_media(bot, message):
             return
             
         file_unique_id = None
+        file_id = None
+        
         if message.video:
             file_unique_id = message.video.file_unique_id
+            file_id = message.video.file_id
         elif message.document:
             file_unique_id = message.document.file_unique_id
+            file_id = message.document.file_id
 
-        if not file_unique_id:
+        if not file_unique_id or not file_id:
             return
             
         result = None
@@ -47,20 +51,18 @@ async def forward_media(bot, message):
             return 
             
         try:    
-            await bot.copy_message(
+            await bot.send_cached_media(
                 chat_id=chat,
-                from_chat_id=message.chat.id,
-                message_id=message.id,
+                file_id=file_id,
                 caption=f"**{message.caption or ''}**",
                 parse_mode=enums.ParseMode.MARKDOWN
             )
         except FloodWait as e:
             logger.warning(f"⏳ FloodWait triggered. Sleeping for {e.value} seconds.")
             await asyncio.sleep(e.value)
-            await bot.copy_message(
+            await bot.send_cached_media(
                 chat_id=chat,
-                from_chat_id=message.chat.id,
-                message_id=message.id,
+                file_id=file_id,
                 caption=f"**{message.caption or ''}**",
                 parse_mode=enums.ParseMode.MARKDOWN
             )   
