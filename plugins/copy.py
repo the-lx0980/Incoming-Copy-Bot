@@ -19,7 +19,7 @@ _gen: Dict[int, int] = {}          # generation token per source
 _buf_lock = asyncio.Lock()
 _send_locks: Dict[int, asyncio.Lock] = {}
 _ORDER_WAIT = 2.5               # seconds to wait after last message in bulk
-_INTER_SEND_DELAY = 0.35           # gap between individual copies
+_INTER_SEND_DELAY = 0.5           # gap between individual copies
 
 
 async def _get_send_lock(source_id: int) -> asyncio.Lock:
