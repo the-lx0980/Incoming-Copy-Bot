@@ -18,7 +18,7 @@ _buffers: Dict[int, List[Tuple[int, int, object, bool]]] = defaultdict(list)
 _gen: Dict[int, int] = {}          # generation token per source
 _buf_lock = asyncio.Lock()
 _send_locks: Dict[int, asyncio.Lock] = {}
-_ORDER_WAIT = 2.5               # seconds to wait after last message in bulk
+_ORDER_WAIT = 5               # seconds to wait after last message in bulk
 _INTER_SEND_DELAY = 0.5           # gap between individual copies
 
 
