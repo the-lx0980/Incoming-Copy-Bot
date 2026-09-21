@@ -11,7 +11,7 @@ class UserBot(Client):
             api_id=Config.API_ID,
             api_hash=Config.API_HASH,
             plugins={"root": "plugins"},
-            workers=8,                 # reduced – actual copying is now sequential
+            workers=4,                       # low – copying is fully sequential now
             session_string=Config.SESSION,
             sleep_threshold=10
         )
@@ -30,12 +30,12 @@ class UserBot(Client):
             self.LOGGER.error(f"❌ Database connection failed: {e}")
             raise
 
-        # Start the sequential forward worker
+        # Start the ordered forward worker (priority by message.id)
         start_forward_worker(self)
-        self.LOGGER.info("🚀 Sequential forward worker started")
+        self.LOGGER.info("🚀 Ordered forward worker started (message.id priority)")
 
         self.LOGGER.info(f"🤖 Userbot started as @{bot.username} (ID: {bot.id})")
-        self.LOGGER.info(f"Pyrogram v{__version__} is running...")
+        self.LOGGER.info(f"Pyrogram/Kurigram v{__version__} is running...")
 
     async def stop(self, *args, **kwargs):
         await self.db.close()
